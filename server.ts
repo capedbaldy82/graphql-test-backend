@@ -1,7 +1,20 @@
 import { ApolloServer, gql } from 'apollo-server';
 import fetch from 'node-fetch';
 
-let tweets = [
+interface Tweet {
+  id: string;
+  text: string;
+  userId: string;
+}
+
+interface User {
+  id: string;
+  firstName: string;
+  lastName: string;
+  fullName?: string;
+}
+
+let tweets: Tweet[] = [
   {
     id: '1',
     text: 'first',
@@ -14,7 +27,7 @@ let tweets = [
   },
 ];
 
-let users = [
+let users: User[] = [
   {
     id: '1',
     firstName: 'Caped',
@@ -96,15 +109,17 @@ const resolvers = {
     tweet(root, { id }) {
       return tweets.find((tweet) => tweet.id === id);
     },
-    allMovies() {
-      return fetch('https://yts.mx/api/v2/list_movies.json')
-        .then((r) => r.json())
-        .then((json) => json.data.movies);
+    async allMovies(): Promise<any> {
+      const data = await fetch('https://yts.mx/api/v2/list_movies.json').then((res) => res.json());
+
+      return data;
     },
-    movie(root, { id }) {
-      return fetch(`https://yts.mx/api/v2/movie_details.json?movie_id=${id}`)
-        .then((r) => r.json())
-        .then((json) => json.data.movie);
+    async movie(root, { id }) {
+      const data = await fetch(`https://yts.mx/api/v2/movie_details.json?movie_id=${id}`).then(
+        (res) => res.json()
+      );
+
+      return data;
     },
   },
   Mutation: {
@@ -114,7 +129,7 @@ const resolvers = {
       if (!user) return 'no user';
 
       const newTweet = {
-        id: tweets.length + 1,
+        id: tweets.length + 1 + '',
         text,
         userId,
       };
